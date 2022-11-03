@@ -1,0 +1,9 @@
+﻿@model IFormFile 
+@{
+}
+
+<form asp-action="Send" asp-controller="Home" method="post" enctype="multipart/form-data">
+    <input name="formFile" type="file"  />
+
+    <button class="btn btn-success" type="submit">Send</button>
+</form>

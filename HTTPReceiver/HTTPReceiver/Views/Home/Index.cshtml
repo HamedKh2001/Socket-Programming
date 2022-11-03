@@ -1,0 +1,22 @@
+﻿@model List<string>
+@{
+    ViewData["Title"] = "Home Page";
+}
+<style>
+    .image {
+        max-width: 675px;
+        max-height: 420px
+    }
+</style>
+
+
+<div class="text-center">
+    <h1 class="display-4">Gallery</h1>
+    <p>All Photos In Directory : @Environment.GetFolderPath(Environment.SpecialFolder.CommonPictures) </p>
+    @foreach (var img in Model)
+    {
+        <img class="image" src="/Images/@img" />
+        <hr />
+    }
+</div>
+
