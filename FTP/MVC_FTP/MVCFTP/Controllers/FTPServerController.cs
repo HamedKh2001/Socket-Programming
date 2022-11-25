@@ -7,7 +7,7 @@ namespace Receiver.Controllers
     [Route("api/[controller]/[action]")]
     public class FTPServerController : ControllerBase
     {
-        private string host = "ftp://10.56.100.164:6500";
+        private string host = "ftp://192.168.1.103:6100";
         private string user = null;
         private string pass = null;
         private FtpWebRequest ftpRequest = null;
@@ -17,7 +17,7 @@ namespace Receiver.Controllers
 
 
         [HttpGet]
-        public IActionResult download(string remoteFile, string localFile)
+        public IActionResult Download(string remoteFile, string localFile)
         {
             try
             {
@@ -36,7 +36,7 @@ namespace Receiver.Controllers
                 /* Get the FTP Server's Response Stream */
                 ftpStream = ftpResponse.GetResponseStream();
                 /* Open a File Stream to Write the Downloaded File */
-                FileStream localFileStream = new FileStream(localFile, FileMode.Create);
+                FileStream localFileStream = new FileStream(localFile + "\\" + remoteFile, FileMode.Create);
                 /* Buffer for the Downloaded Data */
                 byte[] byteBuffer = new byte[bufferSize];
                 int bytesRead = ftpStream.Read(byteBuffer, 0, bufferSize);
@@ -60,42 +60,36 @@ namespace Receiver.Controllers
             return Ok();
         }
 
-        [HttpGet]
-        public IActionResult upload(string remoteFile, string localFile)
+        [HttpPost]
+        public async Task<IActionResult> Upload(IFormFile file)
         {
             try
             {
-                ftpRequest = (FtpWebRequest)FtpWebRequest.Create(host + "/" + remoteFile);
-                ftpRequest.Credentials = new NetworkCredential(user, pass);
-                ftpRequest.UseBinary = true;
-                ftpRequest.UsePassive = true;
-                ftpRequest.KeepAlive = true;
-                ftpRequest.Method = WebRequestMethods.Ftp.UploadFile;
-                ftpStream = ftpRequest.GetRequestStream();
-                FileStream localFileStream = new FileStream(localFile, FileMode.Create);
-                /* Buffer for the Downloaded Data */
-                byte[] byteBuffer = new byte[bufferSize];
-                int bytesSent = localFileStream.Read(byteBuffer, 0, bufferSize);
-                try
+                // Get the object used to communicate with the server.
+                FtpWebRequest request = (FtpWebRequest)WebRequest.Create(host + "/" + file.FileName);
+                request.Method = WebRequestMethods.Ftp.UploadFile;
+
+                // This example assumes the FTP site uses anonymous logon.
+                request.Credentials = new NetworkCredential(user, pass);
+
+                // Copy the contents of the file to the request stream.
+                using (var fileStream = file.OpenReadStream())
+                using (Stream requestStream = request.GetRequestStream())
                 {
-                    while (bytesSent != 0)
-                    {
-                        ftpStream.Write(byteBuffer, 0, bytesSent);
-                        bytesSent = localFileStream.Read(byteBuffer, 0, bufferSize);
-                    }
+                    await fileStream.CopyToAsync(requestStream);
                 }
-                catch (Exception ex) { Console.WriteLine(ex.ToString()); }
-                /* Resource Cleanup */
-                localFileStream.Close();
-                ftpStream.Close();
-                ftpRequest = null;
+
+                using (FtpWebResponse response = (FtpWebResponse)await request.GetResponseAsync())
+                {
+                    Console.WriteLine($"Upload File Complete, status {response.StatusDescription}");
+                }
             }
             catch (Exception ex) { Console.WriteLine(ex.ToString()); }
             return Ok();
         }
 
-        [HttpGet]
-        public IActionResult delete(string deleteFile)
+        [HttpDelete]
+        public IActionResult Delete(string deleteFile)
         {
             try
             {
@@ -118,8 +112,9 @@ namespace Receiver.Controllers
             catch (Exception ex) { Console.WriteLine(ex.ToString()); }
             return Ok();
         }
-        [HttpGet]
-        public IActionResult deleteDir(string deleteFile)
+
+        [HttpDelete]
+        public IActionResult DeleteDir(string deleteFile)
         {
             try
             {
@@ -142,8 +137,9 @@ namespace Receiver.Controllers
             catch (Exception ex) { Console.WriteLine(ex.ToString()); }
             return Ok();
         }
-        [HttpGet]
-        public IActionResult rename(string currentFileNameAndPath, string newFileName)
+
+        [HttpPut]
+        public IActionResult Rename(string currentFileNameAndPath, string newFileName)
         {
             try
             {
@@ -170,7 +166,7 @@ namespace Receiver.Controllers
         }
 
         [HttpGet]
-        public IActionResult createDirectory(string newDirectory)
+        public IActionResult CreateDirectory(string newDirectory)
         {
             try
             {
@@ -195,7 +191,7 @@ namespace Receiver.Controllers
         }
 
         [HttpGet]
-        public IActionResult getFileCreatedDateTime(string fileName)
+        public IActionResult GetFileCreatedDateTime(string fileName)
         {
             try
             {
@@ -234,7 +230,7 @@ namespace Receiver.Controllers
         }
 
         [HttpGet]
-        public IActionResult getFileSize(string fileName)
+        public IActionResult GetFileSize(string fileName)
         {
             try
             {
@@ -261,7 +257,7 @@ namespace Receiver.Controllers
         }
 
         [HttpGet]
-        public IActionResult directoryListDetailed(string directory)
+        public IActionResult DirectoryListDetailed(string directory)
         {
             try
             {

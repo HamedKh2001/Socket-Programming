@@ -135,8 +135,8 @@ namespace FtpwebServer
                 Password = textBox2.Text;
                 Server = textBox3.Text;
                 Filename = textBox4.Text;
-                //path = @"C:\Users\Favre\Documents\";
-                path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                path = @"C:\Users\Favre\Desktop";
+                //path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
                 localdest = path + @"\" + Filename;
                 Fullname = Server + @"/" + Filename;
             }
@@ -173,17 +173,17 @@ namespace FtpwebServer
                 FtpWebRequest request1 = (FtpWebRequest)WebRequest.Create(new Uri(string.Format("{0}/{1}", Server, Filename)));
                 request1.Credentials = new NetworkCredential(Username, Password);
                 request.Method = WebRequestMethods.Ftp.GetFileSize;  //GetFileze Method
-                
+
                 FtpWebResponse response = (FtpWebResponse)request1.GetResponse();
                 double total = response.ContentLength;
                 response.Close();
 
-                //FtpWebRequest request2 = (FtpWebRequest)WebRequest.Create(new Uri(string.Format("{0}/{1}", Server, Filename)));
-                //request2.Credentials = new NetworkCredential(Username, Password);
-                //request2.Method = WebRequestMethods.Ftp.GetDateTimestamp; //GetTimestamp Method
-                //FtpWebResponse response2 = (FtpWebResponse)request2.GetResponse();
-                //DateTime modify = response2.LastModified;
-                //response2.Close();
+                FtpWebRequest request2 = (FtpWebRequest)WebRequest.Create(new Uri(string.Format("{0}/{1}", Server, Filename)));
+                request2.Credentials = new NetworkCredential(Username, Password);
+                request2.Method = WebRequestMethods.Ftp.GetDateTimestamp; //GetTimestamp Method
+                FtpWebResponse response2 = (FtpWebResponse)request2.GetResponse();
+                DateTime modify = response2.LastModified;
+                response2.Close();
 
 
                 Stream ftpstream = request.GetResponse().GetResponseStream();
